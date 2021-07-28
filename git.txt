@@ -1,0 +1,5 @@
+git add text.txt
+git init
+git commit -m "message"
+git remote add origin https://github.com/sinceforYy/CUDA_C_C_Programming_Authority_Guide.git
+git push origin main
