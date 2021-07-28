@@ -1,4 +1,4 @@
-git add text.txt
+git add git.txt
 git init
 git commit -m "message"
 git remote add origin https://github.com/sinceforYy/cuda.git
