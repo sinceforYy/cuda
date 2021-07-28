@@ -2,15 +2,20 @@
 #include <cuda_runtime.h>
 #include <stdio.h>
 
-
+/*
+* Host memory is allocated using cudaMallocHost to create a page-locked host array.
+*/
 int main(int argc, char **argv)
 {
+    // set up device
     int dev = 0;
     CHECK(cudaSetDevice(dev));
 
+    // memory size
     unsigned int isize = 1 << 22;
     unsigned int nbytes = isize * sizeof(float);
 
+    // get device information
     cudaDeviceProp deviceProp;
     CHECK(cudaGetDeviceProperties(&deviceProp,dev));
 
@@ -26,23 +31,30 @@ int main(int argc, char **argv)
         deviceProp.name, isize, nbytes / (1024.0f * 1024.0f),
         deviceProp.canMapHostMemory);
     
-        float *h_a;
-        CHECK(cudaMallocHost((float **)&h_a, nbytes));
+    // allocate pinned host mmeory
+    float *h_a;
+    CHECK(cudaMallocHost((float **)&h_a, nbytes));
 
-        float *d_a;
-        CHECK(cudaMalloc((float **)&d_a, nbytes));
+    // allocate device memory
+    float *d_a;
+    CHECK(cudaMalloc((float **)&d_a, nbytes));
 
-        memset(h_a, 0, nbytes);
+    // initialize host memory
+    memset(h_a, 0, nbytes);
 
-        for (int i = 0; i < isize; i++) h_a[i] = 100.10f;
+    for (int i = 0; i < isize; i++) h_a[i] = 100.10f;
 
-        CHECK(cudaMemcpy(d_a, h_a, nbytes, cudaMemcpyHostToDevice));
+    // transfer data from the host to the device
+    CHECK(cudaMemcpy(d_a, h_a, nbytes, cudaMemcpyHostToDevice));
 
-        CHECK(cudaMemcpy(h_a, d_a, nbytes, cudaMemcpyDeviceToHost));
+    // transfer data from the deivce to the host
+    CHECK(cudaMemcpy(h_a, d_a, nbytes, cudaMemcpyDeviceToHost));
 
-        CHECK(cudaFree(d_a));
-        CHECK(cudaFreeHost(h_a));
+    // free memory
+    CHECK(cudaFree(d_a));
+    CHECK(cudaFreeHost(h_a));
 
-        CHECK(cudaDeviceReset());
-        return EXIT_SUCCESS;
+    // reset device
+    CHECK(cudaDeviceReset());
+    return EXIT_SUCCESS;
 }
